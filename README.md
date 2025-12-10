@@ -297,6 +297,3 @@ Some ideas for future work:
 \- Plot per rank runtimes vs rank id for different `-n` values to visualise core heterogeneity.
 
 \- Repeat the benchmark test in C++ to compare with Python speeds (i suspect minimal improvement as NumPy is likely highly optimised in C)
-
-
-
