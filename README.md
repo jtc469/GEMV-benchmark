@@ -64,11 +64,7 @@ Each MPI rank runs the same function:
 
 
 
-&nbsp; [
-
-&nbsp; y = alpha A^{T} B + beta C
-
-&nbsp; ]
+\[ y = alpha A^{T} B + beta C \]
 
 
 
@@ -90,7 +86,7 @@ Defaults in the code:
 
 
 
-There is also a 10 % chance that a rank will skip the computation and immediately return the string `"SKIPPED"`. This gives a simple artificial source of load imbalance.
+There is also a 10 % chance that a rank will skip the computation and immediately return the string `"SKIPPED"`. This gives a simple artificial source of load imbalance, and shows how the total time is dependent on the slowest rank!
 
 
 
@@ -283,4 +279,5 @@ Some ideas for future work:
 - Plot per rank runtimes vs rank id for different `-n` values to visualise core heterogeneity.
 
 - Repeat the benchmark test in C++ to compare with Python speeds (i suspect minimal improvement as NumPy is likely highly optimised in C)
+
 
