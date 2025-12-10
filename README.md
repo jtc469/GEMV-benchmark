@@ -1,10 +1,7 @@
-\# GEMV-benchmark
-
+# GEMV-benchmark
 
 
 Small MPI benchmark for a matrix vector multiply (GEMV) kernel, written in Python with `NumPy` and `mpi4py`.
-
-
 
 I used this project to learn how MPI behaves on a single laptop using a Rocky Linux WSL environment, and to explore practical issues like oversubscription, BLAS threading, heterogeneous cores, and logging MPI runs.
 
@@ -14,7 +11,7 @@ I used this project to learn how MPI behaves on a single laptop using a Rocky Li
 
 
 
-\## Background
+## Background
 
 
 
@@ -22,13 +19,10 @@ I wanted to create a realistic HPC workload that I could run on my Rocky Linux W
 
 
 
-\- A basic linear algebra kernel that maps onto BLAS routines.
-
-\- Multiple MPI ranks running on a single node.
-
-\- Per rank timings and logs for my report.
-
-\- All of this inside a Rocky Linux image running under WSL2 on a Windows laptop.
+- A basic linear algebra kernel that maps onto BLAS routines.
+- Multiple MPI ranks running on a single node.
+- Per rank timings and logs for my report.
+- All of this inside a Rocky Linux image running under WSL2 on a Windows laptop.
 
 
 
@@ -36,33 +30,25 @@ The point is to see how performance changes with:
 
 
 
-\- Number of MPI ranks vs physical cores.
-
-\- Matrix size and number of repetitions.
-
-\- BLAS threading settings.
-
-\- The topology of the CPU that sits underneath WSL.
+- Number of MPI ranks vs physical cores.
+- Matrix size and number of repetitions.
+- BLAS threading settings.
+- The topology of the CPU that sits underneath WSL.
 
 
 
-\## What the benchmark does
+## What the benchmark does
 
 
 
 There are three files:
+- `benchmark.py`
+- `mpi_timer.py`
+- `run_benchmark.sh`
 
 
 
-\- `benchmark.py`
-
-\- `mpi\_timer.py`
-
-\- `run\_benchmark.sh`
-
-
-
-\### GEMV kernel
+### GEMV kernel
 
 
 
@@ -70,23 +56,23 @@ Each MPI rank runs the same function:
 
 
 
-\- Allocate a random dense matrix `A` of shape `(size, size)` and vectors `B` and `C` of length `size` in `float32`.
+- Allocate a random dense matrix `A` of shape `(size, size)` and vectors `B` and `C` of length `size` in `float32`.
 
-\- Form `A\_T = A.T` once.
+- Form `A_T = A.T` once.
 
-\- Repeat this `N` times:
-
-
-
-&nbsp; \\\[
-
-&nbsp; y = \\alpha A^{T} B + \\beta C
-
-&nbsp; \\]
+- Repeat this `N` times:
 
 
 
-\- Return the final `y` flattened.
+&nbsp; [
+
+&nbsp; y = alpha A^{T} B + beta C
+
+&nbsp; ]
+
+
+
+- Return the final `y` flattened.
 
 
 
@@ -94,13 +80,13 @@ Defaults in the code:
 
 
 
-\- `size = 512`
+- `size = 512`
 
-\- `N = 100\_000`
+- `N = 100_000`
 
-\- `alpha = 3.0`
+- `alpha = 3.0`
 
-\- `beta = -1.0`
+- `beta = -1.0`
 
 
 
@@ -108,17 +94,17 @@ There is also a 10 % chance that a rank will skip the computation and immediatel
 
 
 
-\### Timing and logging
+### Timing and logging
 
 
 
-`mpi\_timer.py` defines a decorator `@timer` that:
+`mpi_timer.py` defines a decorator `@timer` that:
 
 
 
-\- Records `time.perf\_counter()` before and after the function.
+- Records `time.perf_counter()` before and after the function.
 
-\- Prints a line with:
+- Prints a line with:
 
 
 
@@ -126,7 +112,7 @@ There is also a 10 % chance that a rank will skip the computation and immediatel
 
 
 
-\- Appends the same line to `mpi\_log.txt`.
+- Appends the same line to `mpi_log.txt`.
 
 
 
@@ -134,9 +120,9 @@ There is also a 10 % chance that a rank will skip the computation and immediatel
 
 
 
-\- Uses `mpi4py` to get the communicator size and rank.
+- Uses `mpi4py` to get the communicator size and rank.
 
-\- Rank 0 prints a header into `mpi\_log.txt` for each run, for example
+- Rank 0 prints a header into `mpi_log.txt` for each run, for example
 
 
 
@@ -144,17 +130,17 @@ There is also a 10 % chance that a rank will skip the computation and immediatel
 
 
 
-\- All ranks call `comm.Barrier()` so the header appears before any lines from the ranks.
+- All ranks call `comm.Barrier()` so the header appears before any lines from the ranks.
 
-\- Applies `@timer` to the GEMV function and calls it once in `main`.
-
-
-
-`run\_benchmark.sh` is a tiny wrapper that runs:
+- Applies `@timer` to the GEMV function and calls it once in `main`.
 
 
 
-`mpirun --bind-to core -n <num\_ranks> python3 benchmark.py`
+`run_benchmark.sh` is a tiny wrapper that runs:
+
+
+
+`mpirun --bind-to core -n <num_ranks> python3 benchmark.py`
 
 
 
@@ -162,11 +148,11 @@ There is also a 10 % chance that a rank will skip the computation and immediatel
 
 
 
-\## Problems I hit and what I learnt
+## Problems I hit and what I learnt
 
 
 
-\### 1. Oversubscription and “wrong” scaling
+### 1. Oversubscription and “wrong” scaling
 
 
 
@@ -178,11 +164,11 @@ That did not happen. As I increased `-n`, each rank became slower. Reasons:
 
 
 
-\- All ranks share the same memory bandwidth and last level cache.
+- All ranks share the same memory bandwidth and last level cache.
 
-\- All ranks run on the same physical socket so they compete for execution units.
+- All ranks run on the same physical socket so they compete for execution units.
 
-\- When I went past the number of physical cores, the OS started time slicing more aggressively.
+- When I went past the number of physical cores, the OS started time slicing more aggressively.
 
 
 
@@ -190,7 +176,7 @@ Lesson: on a fixed single node you should expect per rank runtime to increase pa
 
 
 
-\### 2. BLAS threading inside MPI ranks
+### 2. BLAS threading inside MPI ranks
 
 
 
@@ -198,11 +184,11 @@ Initially NumPy used its default BLAS threading configuration. That meant:
 
 
 
-\- Each MPI rank could spawn multiple BLAS threads.
+- Each MPI rank could spawn multiple BLAS threads.
 
-\- MPI and BLAS threads fought for cores.
+- MPI and BLAS threads fought for cores.
 
-\- The OS scheduler swapped things around and runtimes were noisy.
+- The OS scheduler swapped things around and runtimes were noisy.
 
 
 
@@ -210,15 +196,15 @@ I fixed this by setting the following environment variables in the shell before 
 
 
 
-\- `OMP\_NUM\_THREADS=1`
+- `OMP_NUM_THREADS=1`
 
-\- `MKL\_NUM\_THREADS=1`
+- `MKL_NUM_THREADS=1`
 
-\- `OPENBLAS\_NUM\_THREADS=1`
+- `OPENBLAS_NUM_THREADS=1`
 
 
 
-\### 3. Heterogeneous cores and rank placement
+### 3. Heterogeneous cores and rank placement
 
 
 
@@ -226,9 +212,9 @@ Through this experiment I discovered my laptop CPU has performance cores and eff
 
 
 
-\- Four ranks finished around one time (~3.8s).
+- Four ranks finished around one time (~3.8s).
 
-\- The other four ranks finished noticeably (~5.6 seconds).
+- The other four ranks finished noticeably (~5.6 seconds).
 
 
 
@@ -240,7 +226,7 @@ Lesson: even on a single node, hardware is not always homogeneous as core type a
 
 
 
-\### 4. Thermal throttling
+### 4. Thermal throttling
 
 
 
@@ -260,7 +246,7 @@ Lesson: for home experiments it is often better to use lower per-iteration work 
 
 
 
-\## How to run it
+## How to run it
 
 
 
@@ -268,13 +254,13 @@ From inside the repository the basic steps are:
 
 
 
-\- Install `numpy` and `mpi4py` into your Python environment.
+- Install `numpy` and `mpi4py` into your Python environment.
 
-\- Run `sh run\_benchmark.sh 4` and compare the results with `sh run\\\_benchmark.sh 8`
+- Run `sh run_benchmark.sh 4` and compare the results with `sh run_benchmark.sh 8`
 
 
 
-Each run prints timings to the terminal and appends them to `mpi\_log.txt` together with a header showing the number of ranks and a timestamp.
+Each run prints timings to the terminal and appends them to `mpi_log.txt` together with a header showing the number of ranks and a timestamp.
 
 
 
@@ -286,7 +272,7 @@ You can also tweak the workload by changing `N` and `size` in `benchmark.py`.
 
 
 
-\## Possible extensions
+## Possible extensions
 
 
 
@@ -294,6 +280,7 @@ Some ideas for future work:
 
 
 
-\- Plot per rank runtimes vs rank id for different `-n` values to visualise core heterogeneity.
+- Plot per rank runtimes vs rank id for different `-n` values to visualise core heterogeneity.
 
-\- Repeat the benchmark test in C++ to compare with Python speeds (i suspect minimal improvement as NumPy is likely highly optimised in C)
+- Repeat the benchmark test in C++ to compare with Python speeds (i suspect minimal improvement as NumPy is likely highly optimised in C)
+
